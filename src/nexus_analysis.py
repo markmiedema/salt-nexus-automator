@@ -1,285 +1,123 @@
 # src/nexus_analysis.py
-import pandas as pd
+"""Economic‑Nexus analysis engine (vectorised edition).
+
+This refactor eliminates Python‑level nested loops by leaning on the
+helper functions in `src.agg_utils`.  It turns raw transaction data into
+monthly metrics, evaluates each state’s thresholds, and returns a tidy
+DataFrame with a `first_trigger_month` column.
+"""
+
+from __future__ import annotations
+
 import logging
-from dateutil.relativedelta import relativedelta
-from src.utils import ErrorCollector
+from typing import Dict, Any
+
+import pandas as pd
+
+from src.agg_utils import (
+    monthly_state_summary,
+    add_rolling_12m,
+    add_calendar_year_metrics,
+    evaluate_thresholds,
+    MARKETPLACE_CHANNELS,  # <- parsed once inside agg_utils
+)
+
+logger = logging.getLogger(__name__)
+
 
 class NexusAnalyzer:
-    """Performs state economic nexus analysis based on configured thresholds and rules."""
+    """Core façade class.  Feed it a state‑config dict, get triggers back."""
 
-    def __init__(self, standardized_df: pd.DataFrame, state_config: dict, error_collector: ErrorCollector):
+    # --------------------------------------------------------------------- #
+    # Constructor                                                           #
+    # --------------------------------------------------------------------- #
+    def __init__(self, state_config: Dict[str, Dict[str, Any]]):
         """
-        Initializes the NexusAnalyzer.
-
-        Args:
-            standardized_df (pd.DataFrame): Cleaned and standardized sales data with datetime index.
-            state_config (dict): Loaded configuration from state_config.yaml.
-            error_collector (ErrorCollector): Instance for collecting errors/warnings.
+        Parameters
+        ----------
+        state_config : dict
+            Mapping ``'AL'`` → ``{'lookback_rule': 'rolling_12m',
+                                  'sales_threshold': 250_000,
+                                  'transaction_threshold': None}``
         """
-        self.df = standardized_df.copy()
-        self.config = state_config
-        self.error_collector = error_collector
+        self.state_config = state_config
 
-        # Ensure 'date' is datetime index (should be done post-standardization)
-        if not isinstance(self.df.index, pd.DatetimeIndex):
-             msg="Input DataFrame must have a DatetimeIndex named 'date'."
-             logging.error(msg)
-             # Handle error appropriately - maybe raise or return empty results?
-             raise ValueError(msg)
-
-        self.df.sort_index(inplace=True)
-        # Add month_year period for efficient grouping/joining later
-        self.df['month_year'] = self.df.index.to_period('M')
-        logging.info(f"NexusAnalyzer initialized. Data spans from {self.df.index.min()} to {self.df.index.max()}.")
-
-
-    def _get_state_params(self, state: str) -> dict:
-        """ Safely gets parameters for a state from the config. """
-        if state not in self.config:
-            # Only warn once per state
-            msg = f"No configuration found for state: {state}. Skipping analysis for this state."
-            self.error_collector.add_warning(msg) # add_warning handles duplicates
-            return None
-        # Return a copy to prevent modification? Or assume read-only.
-        return self.config[state]
-
-    def _calculate_rolling_aggregates(self, state_df: pd.DataFrame, rule: str, details: dict, current_period: pd.Period) -> pd.Series:
+    # --------------------------------------------------------------------- #
+    # Main API                                                              #
+    # --------------------------------------------------------------------- #
+    def analyze_nexus(self, df_raw: pd.DataFrame) -> pd.DataFrame:
         """
-        Calculates sales and transactions based on lookback rule defined in config.
+        Vectorised economic‑nexus analysis.
 
-        Args:
-            state_df (pd.DataFrame): DataFrame filtered for the specific state and relevant sales channels.
-            rule (str): The lookback rule string (e.g., 'rolling_12m', 'calendar_prev_curr').
-            details (dict): The lookback_details dictionary from config.
-            current_period (pd.Period): The month/period for which to calculate the lookback.
+        Expected columns in ``df_raw``
+        --------------------------------
+        * ``invoice_date``  – parseable date
+        * ``invoice_number`` – unique per transaction
+        * ``state``         – two‑letter abbreviation
+        * ``total_amount``  – numeric
+        * ``channel``       – (OPTIONAL) marketplace vs DTC
 
-        Returns:
-            pd.Series: Containing 'rolling_sales' and 'rolling_transactions'.
+        Returns
+        -------
+        DataFrame
+            Monthly metrics + ``sales_met``, ``txn_met`` flags and
+            ``first_trigger_month`` for each state.
         """
-        sales = 0.0
-        transactions = 0
 
-        # Ensure data has expected columns and index before calculations
-        if state_df.empty or 'total_amount' not in state_df.columns or 'invoice_number' not in state_df.columns:
-            return pd.Series({'rolling_sales': 0.0, 'rolling_transactions': 0})
+        # --- Pre‑processing ---------------------------------------------
+        df = df_raw.copy()
 
-        try:
-            if rule == 'rolling_12m':
-                months = details.get('months', 12)
-                # Window ends at the end of the current period
-                end_date = current_period.end_time
-                # Window starts N-1 months before the current period's start
-                start_date = (current_period - (months - 1)).start_time
-                window_df = state_df[(state_df.index >= start_date) & (state_df.index <= end_date)]
-                sales = window_df['total_amount'].sum()
-                # Count distinct non-zero transactions within the window
-                transactions = window_df[window_df['total_amount'] != 0]['invoice_number'].nunique()
+        # Ensure we have a period column
+        if "month_year" not in df.columns:
+            df["month_year"] = pd.to_datetime(df["invoice_date"]).dt.to_period("M")
 
-            elif rule == 'calendar_prev_curr':
-                # Based on *EITHER* the complete previous calendar year *OR* the current calendar year-to-date
-                current_year = current_period.year
-                prev_year = current_year - 1
+        # Filter marketplace channels *if* your rules exclude them.
+        if "channel" in df.columns:
+            df = df.loc[~df["channel"].str.upper().isin(MARKETPLACE_CHANNELS)]
 
-                # Previous full calendar year
-                start_prev_yr = pd.Timestamp(f'{prev_year}-01-01')
-                end_prev_yr = pd.Timestamp(f'{prev_year}-12-31')
-                prev_yr_df = state_df[(state_df.index >= start_prev_yr) & (state_df.index <= end_prev_yr)]
-                sales_prev_yr = prev_yr_df['total_amount'].sum()
-                tx_prev_yr = prev_yr_df[prev_yr_df['total_amount'] != 0]['invoice_number'].nunique()
+        # --- 1. Monthly aggregation -------------------------------------
+        df_m = monthly_state_summary(df)  # (state, month) index
 
-                # Current calendar year up to end of current period
-                start_curr_yr = pd.Timestamp(f'{current_year}-01-01')
-                end_curr_period = current_period.end_time
-                curr_ytd_df = state_df[(state_df.index >= start_curr_yr) & (state_df.index <= end_curr_period)]
-                sales_curr_ytd = curr_ytd_df['total_amount'].sum()
-                tx_curr_ytd = curr_ytd_df[curr_ytd_df['total_amount'] != 0]['invoice_number'].nunique()
+        # --- 2. Rolling 12‑month totals ---------------------------------
+        df_m = add_rolling_12m(df_m)
 
-                # Use the max value from either period for the threshold check for this month
-                sales = max(sales_prev_yr, sales_curr_ytd)
-                transactions = max(tx_prev_yr, tx_curr_ytd)
+        # --- 3. Calendar‑year helpers -----------------------------------
+        df_m = add_calendar_year_metrics(df_m)
 
-            elif rule == 'calendar_prev':
-                 # Based *ONLY* on the complete previous calendar year
-                 prev_year = current_period.year - 1
-                 start_prev_yr = pd.Timestamp(f'{prev_year}-01-01')
-                 end_prev_yr = pd.Timestamp(f'{prev_year}-12-31')
-                 prev_yr_df = state_df[(state_df.index >= start_prev_yr) & (state_df.index <= end_prev_yr)]
-                 sales = prev_yr_df['total_amount'].sum()
-                 transactions = prev_yr_df[prev_yr_df['total_amount'] != 0]['invoice_number'].nunique()
-
-            elif rule == 'rolling_4q':
-                # Preceding 4 *completed* quarters ending prior to the *start* of the current quarter might be typical interpretation.
-                # OR interpretation: 12 months ending at end of *prior* quarter. Let's use simpler rolling 12 for now.
-                # TODO: Clarify exact "rolling 4 quarter" definition if needed for states like NY/IL/VT.
-                # Using rolling_12m as a proxy for now, adjust if needed.
-                logging.debug(f"Using 'rolling_12m' logic as proxy for 'rolling_4q' rule for period {current_period}. Verify specific state definition.")
-                months = 12 # Standard 12 months for proxy
-                end_date = current_period.end_time
-                start_date = (current_period - (months - 1)).start_time
-                window_df = state_df[(state_df.index >= start_date) & (state_df.index <= end_date)]
-                sales = window_df['total_amount'].sum()
-                transactions = window_df[window_df['total_amount'] != 0]['invoice_number'].nunique()
-
-            elif rule == 'accounting_year':
-                 # Needs definition of 'accounting_year' - fiscal year end? Assume calendar for now.
-                 # TODO: Implement logic based on actual definition of 'accounting_year' (e.g., for PR)
-                 logging.warning(f"Lookback rule 'accounting_year' not fully implemented. Using 'calendar_prev' logic as fallback for period {current_period}.")
-                 prev_year = current_period.year - 1
-                 start_prev_yr = pd.Timestamp(f'{prev_year}-01-01')
-                 end_prev_yr = pd.Timestamp(f'{prev_year}-12-31')
-                 prev_yr_df = state_df[(state_df.index >= start_prev_yr) & (state_df.index <= end_prev_yr)]
-                 sales = prev_yr_df['total_amount'].sum()
-                 transactions = prev_yr_df[prev_yr_df['total_amount'] != 0]['invoice_number'].nunique()
-
-
-            elif rule == 'none':
-                # For states with no sales tax (DE, MT, NH, OR)
-                sales = 0.0
-                transactions = 0
-
-            else:
-                msg = f"Unsupported lookback rule '{rule}' found in config. Calculation defaulted to 0."
-                self.error_collector.add_warning(msg)
-                sales = 0.0
-                transactions = 0
-
-        except Exception as e:
-             logging.error(f"Error during rolling aggregate calculation for rule '{rule}', period {current_period}: {e}", exc_info=True)
-             return pd.Series({'rolling_sales': 0.0, 'rolling_transactions': 0}) # Return zeros on error
-
-        return pd.Series({'rolling_sales': sales, 'rolling_transactions': transactions})
-
-
-    def analyze_nexus(self) -> pd.DataFrame:
-        """
-        Analyzes nexus for all states based on configured thresholds and lookback periods.
-
-        Returns:
-            pd.DataFrame: A DataFrame summarizing nexus trigger status per state per month.
-                          Includes flags for meeting sales/txn thresholds and first trigger month.
-        """
+        # --- 4. Threshold evaluation per state --------------------------
         results = []
-        all_states = sorted(self.df['state'].unique()) # Process states alphabetically
+        for state in df_m.index.get_level_values("state").unique():
+            slice_ = df_m.loc[state].copy()
 
-        if self.df.empty:
-             logging.warning("Standardized DataFrame is empty. Cannot perform nexus analysis.")
-             return pd.DataFrame()
-
-        min_month = self.df['month_year'].min()
-        max_month = self.df['month_year'].max()
-        # Create a full range of periods to analyze consistently across states
-        analysis_periods = pd.period_range(start=min_month, end=max_month, freq='M')
-
-        logging.info(f"Starting nexus analysis for {len(all_states)} states from {min_month} to {max_month}...")
-
-        # Pre-filter marketplace sales if needed *once*
-        # TODO: Make marketplace channel identifiers configurable
-        marketplace_channels = ['AMAZON-FBA', 'ETSY', 'EBAY'] # Example list
-        is_marketplace_sale = self.df['sales_channel'].str.upper().isin(marketplace_channels)
-        df_non_marketplace = self.df[~is_marketplace_sale]
-
-        for state in all_states:
-            state_params = self._get_state_params(state)
-            if not state_params: continue # Skips state if no config
-
-            # Get state specific parameters
-            sales_thresh = state_params.get('sales_threshold')
-            txn_thresh = state_params.get('transaction_threshold')
-            lookback_rule = state_params.get('lookback_rule', 'rolling_12m')
-            lookback_details = state_params.get('lookback_details', {})
-            include_marketplace = state_params.get('marketplace_threshold_inclusion', True)
-
-            # Skip states with no thresholds defined or no applicable rule
-            if (sales_thresh is None and txn_thresh is None) or lookback_rule == 'none':
-                logging.info(f"Skipping nexus analysis for state {state} (no thresholds or rule is 'none').")
+            cfg = self.state_config.get(state)
+            if cfg is None:
+                logger.warning("No config for %s; skipping", state)
                 continue
 
-            # Select the appropriate dataframe for threshold calculation
-            if include_marketplace:
-                state_df_for_thresholds = self.df[self.df['state'] == state]
-            else:
-                state_df_for_thresholds = df_non_marketplace[df_non_marketplace['state'] == state]
-                logging.debug(f"{state}: Using non-marketplace sales for threshold calculations.")
-
-            if state_df_for_thresholds.empty:
-                logging.debug(f"No relevant sales data found for state {state} for threshold calculation. Skipping detailed analysis.")
-                # Optionally add entries with 0 results if needed for reporting consistency
-                continue
-
-            state_results = []
-            first_trigger_month_for_state = pd.NaT # Track first trigger for *this* state
-
-            for period in analysis_periods:
-                 # Calculate aggregates based on the lookback rule for the current period
-                 agg_results = self._calculate_rolling_aggregates(
-                     state_df_for_thresholds, # Use potentially filtered data
-                     lookback_rule,
-                     lookback_details,
-                     period
-                 )
-
-                 # --- Core Threshold Logic ---
-                 # Check if sales threshold exists AND is met
-                 sales_met = (agg_results['rolling_sales'] >= sales_thresh) if sales_thresh is not None else False
-
-                 # Check if transaction threshold exists AND is met
-                 txn_met = (agg_results['rolling_transactions'] >= txn_thresh) if txn_thresh is not None else False
-
-                 # Nexus is triggered if EITHER defined threshold condition is met
-                 nexus_triggered = sales_met or txn_met
-                 # --- End Core Threshold Logic ---
-
-                 # Track the first month nexus was triggered for this state
-                 if nexus_triggered and pd.isna(first_trigger_month_for_state):
-                     first_trigger_month_for_state = period
-                     logging.info(f"Nexus triggered for state {state} in period {period}. Sales: {agg_results['rolling_sales']:.2f}, Txns: {agg_results['rolling_transactions']}.")
-
-
-                 state_results.append({
-                     'state': state,
-                     'month_year': period,
-                     'rolling_sales': agg_results['rolling_sales'],
-                     'rolling_transactions': agg_results['rolling_transactions'],
-                     'sales_threshold': sales_thresh,
-                     'txn_threshold': txn_thresh,
-                     'lookback_rule': lookback_rule,
-                     'sales_met': sales_met,
-                     'txn_met': txn_met,
-                     'nexus_triggered': nexus_triggered,
-                     # Use the consistent value once trigger found
-                     'first_trigger_month': first_trigger_month_for_state
-                 })
-
-            if state_results:
-                results.extend(state_results)
+            slice_ = evaluate_thresholds(
+                slice_,
+                cfg.get("lookback_rule", "rolling_12m"),
+                cfg.get("sales_threshold"),
+                cfg.get("transaction_threshold"),
+            )
+            slice_["state"] = state  # re‑add for merge later
+            results.append(slice_)
 
         if not results:
-            logging.warning("No nexus analysis results generated after processing all states.")
-            return pd.DataFrame()
+            raise ValueError("No states processed—check inputs & config.")
 
-        # Combine results into a single DataFrame
-        summary_df = pd.DataFrame(results)
+        df_out = pd.concat(results).reset_index()
 
-        # Ensure correct dtypes for period columns
-        summary_df['month_year'] = pd.PeriodIndex(summary_df['month_year'], freq='M')
-        summary_df['first_trigger_month'] = pd.PeriodIndex(summary_df['first_trigger_month'].astype(str), freq='M') # Handle potential NaT conversion issues
+        # --- 5. First trigger month -------------------------------------
+        first_hit = (
+            df_out.loc[df_out["sales_met"] | df_out["txn_met"]]
+            .groupby("state")["month_year"]
+            .min()
+            .rename("first_trigger_month")
+        )
+        df_out = df_out.merge(first_hit, on="state", how="left")
+
+        return df_out
 
 
-        # Update summary statistics
-        triggered_states_count = summary_df.loc[summary_df['first_trigger_month'].notna(), 'state'].nunique()
-        self.error_collector.update_summary('nexus_triggers', triggered_states_count)
-        logging.info(f"Nexus analysis complete. Found potential first triggers in {triggered_states_count} state(s).")
-
-        # Define final column order
-        cols_order = [
-            'state', 'month_year', 'rolling_sales', 'rolling_transactions',
-            'sales_threshold', 'txn_threshold', 'sales_met', 'txn_met',
-            'nexus_triggered', 'first_trigger_month', 'lookback_rule'
-        ]
-        # Ensure all columns exist, add missing ones as NaN if needed
-        for col in cols_order:
-            if col not in summary_df.columns:
-                summary_df[col] = None
-        summary_df = summary_df[cols_order]
-
-        return summary_df
+__all__ = ["NexusAnalyzer"]
