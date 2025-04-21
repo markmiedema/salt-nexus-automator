@@ -1,0 +1,757 @@
+# config/state_config.yaml
+# WARNING: Review and verify all thresholds, rules, rates, and VDA parameters
+#          against current, official state sources for your analysis period.
+#          Null values MUST be populated for corresponding features to work.
+
+AL:
+  sales_threshold: 250000
+  transaction_threshold: null
+  lookback_rule: calendar_prev # Verify specific AL rule interpretation
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify AL rule
+  tax_rate: 0.09427 # Merged from tax_rates.json (9.427 / 100), verify rate type (state/avg local)
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory # Code needs logic for this, or replace with rate
+  standard_penalty_rate: 0.1 # Verify AL penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+AK:
+  sales_threshold: 100000
+  transaction_threshold: null # Note: Threshold was 200 txns previously
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify AK rule
+  tax_rate: 0.01821 # Merged from tax_rates.json (1.821 / 100), verify rate type (state/avg local) - Note: AK has no state sales tax, this likely avg local. Needs careful handling.
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify AK penalty % (if applicable)
+  quirk_flags:
+    has_local_taxes: true
+    no_state_sales_tax: true # Flag added
+
+AZ:
+  sales_threshold: 100000 # Note: Threshold phased down over time, verify applicable threshold
+  transaction_threshold: null
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify AZ rule
+  tax_rate: 0.08414 # Merged from tax_rates.json (8.414 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify AZ penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+AR:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify AR rule
+  tax_rate: 0.0946 # Merged from tax_rates.json (9.46 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify AR penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+CA:
+  sales_threshold: 500000
+  transaction_threshold: null
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify CA rule
+  tax_rate: 0.08802 # Merged from tax_rates.json (8.802 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify CA penalty %
+  quirk_flags:
+    has_local_taxes: true
+    district_taxes_complex: true # Added flag
+
+CO:
+  sales_threshold: 100000
+  transaction_threshold: null
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify CO rule
+  tax_rate: 0.07857 # Merged from tax_rates.json (7.857 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify CO penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+CT:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: rolling_12m # Verify exact CT definition (preceding 12m)
+  lookback_details:
+    months: 12 # Added detail for clarity
+  marketplace_threshold_inclusion: true # Verify CT rule
+  tax_rate: 0.0635 # Merged from tax_rates.json (6.35 / 100)
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify CT penalty %
+  quirk_flags:
+    has_local_taxes: false # CT generally doesn't have local sales taxes
+
+DE:
+  sales_threshold: null
+  transaction_threshold: null
+  lookback_rule: none
+  lookback_details: {}
+  marketplace_threshold_inclusion: null # N/A
+  tax_rate: 0.0 # Merged from tax_rates.json (0.0 / 100)
+  vda_lookback_cap: null # N/A
+  vda_penalty_waived: null # N/A
+  vda_interest_rule: null # N/A
+  standard_penalty_rate: null # N/A
+  quirk_flags:
+    no_state_sales_tax: true # Flag added
+
+FL:
+  sales_threshold: 100000
+  transaction_threshold: null
+  lookback_rule: calendar_prev
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify FL rule
+  tax_rate: 0.06948 # Merged from tax_rates.json (6.948 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify FL penalty %
+  quirk_flags:
+    has_local_taxes: true # FL has local surtaxes
+
+GA:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify GA rule
+  tax_rate: 0.07418 # Merged from tax_rates.json (7.418 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify GA penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+HI:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify HI rule (GET applies differently)
+  tax_rate: 0.045 # Merged from tax_rates.json (4.5 / 100) - Note: This is GET rate, handling might differ
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify HI penalty %
+  quirk_flags:
+    has_local_taxes: true # County GET surcharges
+    is_get_not_sales_tax: true # Flag added
+
+ID:
+  sales_threshold: 100000
+  transaction_threshold: null
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify ID rule
+  tax_rate: 0.06027 # Merged from tax_rates.json (6.027 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify ID penalty %
+  quirk_flags:
+    has_local_taxes: true # Some resort/auditorium taxes
+
+IL:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: rolling_4q # Verify exact IL definition (quarters ending...)
+  lookback_details:
+     quarters: 4
+  marketplace_threshold_inclusion: true # Verify IL rule
+  tax_rate: 0.0889 # Merged from tax_rates.json (8.89 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify IL penalty %
+  quirk_flags:
+    has_local_taxes: true
+    lookback_is_quarters: true
+
+IN:
+  sales_threshold: 100000
+  transaction_threshold: null # Note: was 200 previously
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify IN rule
+  tax_rate: 0.07 # Merged from tax_rates.json (7.0 / 100)
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify IN penalty %
+  quirk_flags:
+    has_local_taxes: false
+
+IA:
+  sales_threshold: 100000
+  transaction_threshold: null # Note: was 200 previously
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify IA rule
+  tax_rate: 0.06942 # Merged from tax_rates.json (6.942 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify IA penalty %
+  quirk_flags:
+    has_local_taxes: true # Local option taxes
+
+KS:
+  sales_threshold: 100000
+  transaction_threshold: null # KS explicitly removed txn threshold
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify KS rule
+  tax_rate: 0.08773 # Merged from tax_rates.json (8.773 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify KS penalty %
+  quirk_flags:
+    has_local_taxes: true
+    no_transaction_threshold: true # Flag added
+
+KY:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify KY rule
+  tax_rate: 0.06 # Merged from tax_rates.json (6.0 / 100)
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify KY penalty %
+  quirk_flags:
+    has_local_taxes: false # Generally no local sales tax
+
+LA:
+  sales_threshold: 100000
+  transaction_threshold: null # Note: was 200 previously
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify LA rule
+  tax_rate: 0.10116 # Merged from tax_rates.json (10.116 / 100), verify rate type - Highest avg rate usually
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify LA penalty %
+  quirk_flags:
+    has_local_taxes: true
+    local_taxes_very_complex: true # Flag added
+
+ME:
+  sales_threshold: 100000
+  transaction_threshold: null # Note: was 200 previously
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify ME rule
+  tax_rate: 0.055 # Merged from tax_rates.json (5.5 / 100)
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify ME penalty %
+  quirk_flags:
+    has_local_taxes: false
+
+MD:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify MD rule
+  tax_rate: 0.06 # Merged from tax_rates.json (6.0 / 100)
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify MD penalty %
+  quirk_flags:
+    has_local_taxes: false
+
+MA:
+  sales_threshold: 100000
+  transaction_threshold: null # Note: Had 100 txn previously
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify MA rule
+  tax_rate: 0.0625 # Merged from tax_rates.json (6.25 / 100)
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify MA penalty %
+  quirk_flags:
+    has_local_taxes: false # Generally no local sales tax
+
+MI:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: calendar_prev
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify MI rule
+  tax_rate: 0.06 # Merged from tax_rates.json (6.0 / 100)
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify MI penalty %
+  quirk_flags:
+    has_local_taxes: false
+
+MN:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: rolling_12m # Verify exact MN definition (prior 12m)
+  lookback_details:
+    months: 12
+  marketplace_threshold_inclusion: true # Verify MN rule
+  tax_rate: 0.08125 # Merged from tax_rates.json (8.125 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify MN penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+MS:
+  sales_threshold: 250000
+  transaction_threshold: null
+  lookback_rule: rolling_12m # Verify exact MS definition (prior 12m)
+  lookback_details:
+    months: 12
+  marketplace_threshold_inclusion: true # Verify MS rule
+  tax_rate: 0.07062 # Merged from tax_rates.json (7.062 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify MS penalty %
+  quirk_flags:
+    has_local_taxes: true # Limited local taxes
+
+MO:
+  sales_threshold: 100000
+  transaction_threshold: null
+  lookback_rule: calendar_prev # MO uses previous calendar year total
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify MO rule
+  tax_rate: 0.0841 # Merged from tax_rates.json (8.41 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify MO penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+MT:
+  sales_threshold: null
+  transaction_threshold: null
+  lookback_rule: none
+  lookback_details: {}
+  marketplace_threshold_inclusion: null # N/A
+  tax_rate: 0.0 # Merged from tax_rates.json (0.0 / 100)
+  vda_lookback_cap: null # N/A
+  vda_penalty_waived: null # N/A
+  vda_interest_rule: null # N/A
+  standard_penalty_rate: null # N/A
+  quirk_flags:
+    no_state_sales_tax: true
+
+NE:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify NE rule
+  tax_rate: 0.06972 # Merged from tax_rates.json (6.972 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify NE penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+NV:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify NV rule
+  tax_rate: 0.08236 # Merged from tax_rates.json (8.236 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify NV penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+NH:
+  sales_threshold: null
+  transaction_threshold: null
+  lookback_rule: none
+  lookback_details: {}
+  marketplace_threshold_inclusion: null # N/A
+  tax_rate: 0.0 # Merged from tax_rates.json (0.0 / 100)
+  vda_lookback_cap: null # N/A
+  vda_penalty_waived: null # N/A
+  vda_interest_rule: null # N/A
+  standard_penalty_rate: null # N/A
+  quirk_flags:
+    no_state_sales_tax: true
+
+NJ:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify NJ rule
+  tax_rate: 0.06601 # Merged from tax_rates.json (6.601 / 100), verify rate type (Note: Rate changed recently)
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify NJ penalty %
+  quirk_flags:
+    has_local_taxes: true # Limited UEZ taxes
+
+NM:
+  sales_threshold: 100000
+  transaction_threshold: null
+  lookback_rule: calendar_prev
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify NM rule (GRT applies differently)
+  tax_rate: 0.07627 # Merged from tax_rates.json (7.627 / 100), verify rate type (GRT)
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify NM penalty %
+  quirk_flags:
+    has_local_taxes: true # Local GRT increments
+    is_get_not_sales_tax: true # Technically Gross Receipts Tax
+
+NY:
+  sales_threshold: 500000
+  transaction_threshold: 100
+  lookback_rule: rolling_4q # Preceding four sales tax quarters
+  lookback_details:
+    quarters: 4
+  marketplace_threshold_inclusion: true # Verify NY rule
+  tax_rate: 0.08532 # Merged from tax_rates.json (8.532 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify NY penalty %
+  quirk_flags:
+    has_local_taxes: true
+    lookback_is_quarters: true
+
+NC:
+  sales_threshold: 100000
+  transaction_threshold: null # Note: was 200 previously
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify NC rule
+  tax_rate: 0.06996 # Merged from tax_rates.json (6.996 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify NC penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+ND:
+  sales_threshold: 100000
+  transaction_threshold: null
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify ND rule
+  tax_rate: 0.0705 # Merged from tax_rates.json (7.05 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify ND penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+OH:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify OH rule
+  tax_rate: 0.07233 # Merged from tax_rates.json (7.233 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify OH penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+OK:
+  sales_threshold: 100000
+  transaction_threshold: null # Verify OK threshold
+  lookback_rule: calendar_prev_curr # Verify OK rule
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify OK rule
+  tax_rate: 0.09005 # Merged from tax_rates.json (9.005 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify OK penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+OR:
+  sales_threshold: null
+  transaction_threshold: null
+  lookback_rule: none
+  lookback_details: {}
+  marketplace_threshold_inclusion: null # N/A
+  tax_rate: 0.0 # Merged from tax_rates.json (0.0 / 100)
+  vda_lookback_cap: null # N/A
+  vda_penalty_waived: null # N/A
+  vda_interest_rule: null # N/A
+  standard_penalty_rate: null # N/A
+  quirk_flags:
+    no_state_sales_tax: true
+
+PA:
+  sales_threshold: 100000
+  transaction_threshold: null
+  lookback_rule: calendar_prev_curr # Verify PA rule
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify PA rule
+  tax_rate: 0.06341 # Merged from tax_rates.json (6.341 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify PA penalty %
+  quirk_flags:
+    has_local_taxes: true # Allegheny & Philly
+
+PR: # Puerto Rico - Included from template, verify all details if needed
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: accounting_year # Needs specific handling
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify PR rule
+  tax_rate: null # Needs PR IVU rate
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify PR penalty %
+  quirk_flags:
+    has_local_taxes: true # Municipal IVU
+    is_territory: true # Flag added
+    lookback_is_accounting_year: true
+
+RI:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: calendar_prev
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify RI rule
+  tax_rate: 0.07 # Merged from tax_rates.json (7.0 / 100)
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify RI penalty %
+  quirk_flags:
+    has_local_taxes: false
+
+SC:
+  sales_threshold: 100000
+  transaction_threshold: null
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify SC rule
+  tax_rate: 0.07499 # Merged from tax_rates.json (7.499 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify SC penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+SD:
+  sales_threshold: 100000
+  transaction_threshold: null # Note: was 200 previously
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify SD rule
+  tax_rate: 0.06114 # Merged from tax_rates.json (6.114 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify SD penalty %
+  quirk_flags:
+    has_local_taxes: true # Municipal taxes
+
+TN:
+  sales_threshold: 100000 # Note: was 500k previously
+  transaction_threshold: null
+  lookback_rule: rolling_12m # Verify exact TN definition (prior 12m)
+  lookback_details:
+    months: 12
+  marketplace_threshold_inclusion: true # Verify TN rule
+  tax_rate: 0.09556 # Merged from tax_rates.json (9.556 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify TN penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+TX:
+  sales_threshold: 500000
+  transaction_threshold: null
+  lookback_rule: rolling_12m # Verify exact TX definition (prior 12m)
+  lookback_details:
+    months: 12
+  marketplace_threshold_inclusion: true # Verify TX rule
+  tax_rate: 0.08201 # Merged from tax_rates.json (8.201 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify TX penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+UT:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify UT rule
+  tax_rate: 0.07319 # Merged from tax_rates.json (7.319 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify UT penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+VT:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: rolling_12m # Verify VT rule (potentially rolling 4q interpretation needed)
+  lookback_details:
+    months: 12 # Or quarters: 4 if interpretation changes
+  marketplace_threshold_inclusion: true # Verify VT rule
+  tax_rate: 0.06366 # Merged from tax_rates.json (6.366 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify VT penalty %
+  quirk_flags:
+    has_local_taxes: true # Local option taxes
+
+VA:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify VA rule
+  tax_rate: 0.05771 # Merged from tax_rates.json (5.771 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify VA penalty %
+  quirk_flags:
+    has_local_taxes: true # Regional + optional local
+
+WA:
+  sales_threshold: 100000
+  transaction_threshold: null
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify WA rule (B&O tax also applies)
+  tax_rate: 0.09429 # Merged from tax_rates.json (9.429 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify WA penalty %
+  quirk_flags:
+    has_local_taxes: true
+    has_bo_tax: true # Flag added
+
+WV:
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify WV rule
+  tax_rate: 0.06569 # Merged from tax_rates.json (6.569 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify WV penalty %
+  quirk_flags:
+    has_local_taxes: true # Limited municipal taxes
+
+WI:
+  sales_threshold: 100000
+  transaction_threshold: null
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify WI rule
+  tax_rate: 0.05702 # Merged from tax_rates.json (5.702 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify WI penalty %
+  quirk_flags:
+    has_local_taxes: true # County and stadium taxes
+
+WY:
+  sales_threshold: 100000
+  transaction_threshold: null # Note: Was 200 previously
+  lookback_rule: calendar_prev_curr
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify WY rule
+  tax_rate: 0.05441 # Merged from tax_rates.json (5.441 / 100), verify rate type
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify WY penalty %
+  quirk_flags:
+    has_local_taxes: true
+
+DC: # District of Columbia
+  sales_threshold: 100000
+  transaction_threshold: 200
+  lookback_rule: calendar_prev_curr # Verify DC Rule
+  lookback_details: {}
+  marketplace_threshold_inclusion: true # Verify DC rule
+  tax_rate: 0.06 # Merged from tax_rates.json (6.0 / 100)
+  vda_lookback_cap: null # Needs research
+  vda_penalty_waived: null # Needs research
+  vda_interest_rule: statutory
+  standard_penalty_rate: 0.1 # Verify DC penalty %
+  quirk_flags:
+    has_local_taxes: false # DC acts as state and local
+    is_district: true # Flag added
+
+# Default/Fallback settings (Optional - implement usage in code if needed)
+# DEFAULT:
+#   vda_interest_rate_annual: 0.05 # Used if 'statutory' lookup fails or as placeholder
+#   # Add other fallbacks if needed

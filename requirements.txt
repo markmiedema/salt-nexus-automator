@@ -1,0 +1,5 @@
+# requirements.txt (additions)
+PyYAML>=6.0
+usaddress-scourgify>=1.0.0 # Provides usaddress tagging capabilities
+pytest>=7.0.0 # For running tests
+pytest-benchmark>=3.4.0 # Optional: for performance testing
