@@ -1,0 +1,6 @@
+# requirements-dev.txt
+-r requirements.txt
+pytest>=8
+pytest-benchmark>=4
+black>=24
+ruff>=0.4

@@ -1,5 +1,7 @@
-# requirements.txt (additions)
-PyYAML>=6.0
-usaddress-scourgify>=1.0.0 # Provides usaddress tagging capabilities
-pytest>=7.0.0 # For running tests
-pytest-benchmark>=3.4.0 # Optional: for performance testing
+pandas>=2.0.0,<3.0.0
+numpy>=1.20,<3
+pyarrow>=10,<16
+PyYAML>=6
+usaddress-scourgify>=1
+openpyxl==3.1.2      # pinned after CI green
+reportlab==3.6.13     # move to extras if optional
