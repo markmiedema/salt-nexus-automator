@@ -13,7 +13,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.units import inch
 from reportlab.lib import colors
-from src.utils import ErrorCollector
+from .utils import ErrorCollector
 
 class ReportGenerator:
     """Generates client-ready Excel and PDF reports, plus error/summary files."""

@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "salt-nexus-automator"
+version = "0.0.1"
+description = "Economic-Nexus automation toolkit"
+requires-python = ">=3.11"
+
+[tool.setuptools]
+package-dir = {"" = "src"}          # tell setuptools to look under src/
+
+[tool.setuptools.packages.find]
+where = ["src"]                     # find packages beneath src/

@@ -2,7 +2,7 @@
 import pandas as pd
 import usaddress # For basic parsing, part of usaddress-scourgify typically
 import logging
-from src.utils import ErrorCollector
+from .utils import ErrorCollector
 import numpy as np
 
 class DataStandardizer:

@@ -2,7 +2,7 @@
 import pandas as pd
 import logging
 import os
-from src.utils import ErrorCollector
+from .utils import ErrorCollector
 
 class ExemptionManager:
     """Handles tagging and filtering of exempt transactions."""
